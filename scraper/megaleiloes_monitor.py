@@ -16,8 +16,6 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from typing import List, Dict, Optional
 from supabase import create_client, Client
-# Importação necessária para o schema funcionar
-from supabase.lib.client_options import ClientOptions
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 
@@ -44,13 +42,7 @@ class MegaLeiloesMonitor:
         if not self.supabase_url or not self.supabase_key:
             raise ValueError("❌ Variáveis SUPABASE_URL e SUPABASE_KEY são obrigatórias")
         
-        # AQUI ESTÁ A ALTERAÇÃO DO SCHEMA QUE VOCÊ PEDIU:
-        self.supabase: Client = create_client(
-            self.supabase_url, 
-            self.supabase_key,
-            options=ClientOptions(schema="auctions")
-        )
-        
+        self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
         self.source = 'megaleiloes'
         self.base_url = 'https://www.megaleiloes.com.br'
         
@@ -118,7 +110,7 @@ class MegaLeiloesMonitor:
     def _load_database_items(self):
         """Carrega todos os itens ativos da base em memória"""
         try:
-            response = self.supabase.table('megaleiloes_items') \
+            response = self.supabase.schema('auctions').table('megaleiloes_items') \
                 .select('*') \
                 .eq('source', 'megaleiloes') \
                 .execute()
@@ -146,7 +138,7 @@ class MegaLeiloesMonitor:
             for i in range(0, len(item_ids), 1000):
                 batch = item_ids[i:i+1000]
                 
-                response = self.supabase.table('megaleiloes_monitoring') \
+                response = self.supabase.schema('auctions').table('megaleiloes_monitoring') \
                     .select('*') \
                     .in_('item_id', batch) \
                     .order('snapshot_at', desc=True) \
@@ -592,7 +584,7 @@ class MegaLeiloesMonitor:
             batch_size = 500
             for i in range(0, len(snapshots), batch_size):
                 batch = snapshots[i:i+batch_size]
-                self.supabase.table('megaleiloes_monitoring').insert(batch).execute()
+                self.supabase.schema('auctions').table('megaleiloes_monitoring').insert(batch).execute()
                 print(f"  ✅ Lote {i//batch_size + 1}: {len(batch)} snapshots inseridos")
         
         except Exception as e:
@@ -604,7 +596,7 @@ class MegaLeiloesMonitor:
         try:
             for update in updates:
                 try:
-                    self.supabase.table('megaleiloes_items') \
+                    self.supabase.schema('auctions').table('megaleiloes_items') \
                         .update(update) \
                         .eq('id', update['id']) \
                         .execute()
