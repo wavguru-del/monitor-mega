@@ -1,0 +1,42 @@
+name: MegaLeilões Monitor
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # A cada 6 horas (0, 6, 12, 18)
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: 🟢 Checkout
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: 📦 Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install playwright supabase
+        playwright install chromium
+        playwright install-deps
+    
+    - name: 🚀 Run MegaLeilões Monitor
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      run: |
+        echo "════════════════════════════════════════════════════════════════════"
+        echo "🟢 MEGALEILÕES MONITOR"
+        echo "⏰ $(date '+%Y-%m-%d %H:%M:%S UTC')"
+        echo "════════════════════════════════════════════════════════════════════"
+        python scraper/megaleiloes_monitor.py
+    
+    - name: ✅ Verificar resultado
+      if: failure()
+      run: echo "❌ MegaLeilões Monitor falhou!"
