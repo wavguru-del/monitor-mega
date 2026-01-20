@@ -596,13 +596,16 @@ class MegaLeiloesMonitor:
         try:
             for update in updates:
                 try:
+                    # Remove o ID do dicionário de update (usado apenas no WHERE)
+                    item_id = update.pop('id')
+                    
                     self.supabase.schema('auctions').table('megaleiloes_items') \
                         .update(update) \
-                        .eq('id', update['id']) \
+                        .eq('id', item_id) \
                         .execute()
                     self.stats['items_updated'] += 1
                 except Exception as e:
-                    print(f"  ⚠️ Erro ao atualizar item {update['id']}: {e}")
+                    print(f"  ⚠️ Erro ao atualizar item {update.get('id', 'unknown')}: {e}")
                     self.stats['errors'] += 1
             
             print(f"  ✅ {self.stats['items_updated']} itens atualizados")
