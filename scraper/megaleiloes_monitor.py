@@ -110,7 +110,7 @@ class MegaLeiloesMonitor:
     def _load_database_items(self):
         """Carrega todos os itens ativos da base em memória"""
         try:
-            response = self.supabase.table('megaleiloes_items') \
+            response = self.supabase.table('auctions.megaleiloes_items') \
                 .select('*') \
                 .eq('source', 'megaleiloes') \
                 .execute()
@@ -596,7 +596,7 @@ class MegaLeiloesMonitor:
         try:
             for update in updates:
                 try:
-                    self.supabase.table('megaleiloes_items') \
+                    self.supabase.table('auctions.megaleiloes_items') \
                         .update(update) \
                         .eq('id', update['id']) \
                         .execute()
