@@ -2,7 +2,7 @@ name: MegaLeilões Monitor
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # A cada 6 horas (0, 6, 12, 18)
+    - cron: '0 */2 * * *'  # A cada 2 horas (no minuto 0)
   workflow_dispatch:
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     - name: 📦 Install dependencies
       run: |
         pip install --upgrade pip
-        pip install playwright supabase
+        pip install playwright supabase beautifulsoup4 requests lxml
         playwright install chromium
         playwright install-deps
     
